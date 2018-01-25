@@ -1,5 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.views.generic import ListView
 
 from .models import Game
 from .forms import MoveForm
@@ -21,8 +23,11 @@ def make_move(request,id):
         raise PermissionDenied
     move=game.new_move()
     form=MoveForm(instance=move, data=request.POST)
-    if form.is_invalid():
+    if form.is_valid():
         move.save()
         return redirect("gameplay_detail", id)
     else:
-        return render(request, "gameplay/game_detail.html",{'game':game,'form':form})
+        return render(request,
+                      "gameplay/game_detail.html",
+                      {'game':game,'form':form}
+                      )

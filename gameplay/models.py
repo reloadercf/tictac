@@ -5,6 +5,9 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+
 
 # Create your models here.
 
@@ -51,6 +54,7 @@ class Game(models.Model):
            (user== self.second_player and self.status=='S')
 
  def new_move(self):
+     """Retorna un nuevo objeto con jugador, juego, y una"""
      if self.status not in 'FS':
          raise ValueError('No se puede mover hasta finalizar el juego')
      return Move(
@@ -68,8 +72,25 @@ class Game(models.Model):
 
 
 class Move(models.Model):
- x=models.IntegerField()
- y=models.IntegerField()
+ x=models.IntegerField(
+     validators=[MinValueValidator(0),
+                 MaxValueValidator(BOARD_SIZE-1)]
+ )
+
+ y=models.IntegerField(
+     validators=[MaxValueValidator(0),
+                 MaxValueValidator(BOARD_SIZE-1)]
+ )
  comment=models.CharField(max_length=300, blank=True)
  game=models.ForeignKey(Game,editable=False)
- by_firt_player=models.BooleanField(editable=False)
+ by_first_player=models.BooleanField(editable=False)
+
+def __eq__ (self, other):
+    if other is None:
+        return False
+    return other.by_first_player==self.by_first_player
+
+def save(self, *args, **kwargs):
+    super(Move, self).save (*args, **kwargs)
+    self.game.update_after_move(self)
+    self.game.save()

@@ -25,6 +25,8 @@
 
 
 {% block content %}
+
+
  <div class="col-md-5">
         <table class="table table-bordered tictactoe-table">
             {% for row in game.board %}
@@ -47,10 +49,12 @@
 
     {% if form %}
         <div class="col-md-4">
-            <h3>Esto es tu movimiento</h3>
-            <form method="post" action="">
+            <h3>Es tu turno</h3>
+            <form method="post"
+                  action="{% url 'gameplay_make_move' game.id %}">
                 {{form|crispy}}
                 {% csrf_token %}
+
                 <button type="submit">Hacer movimiento</button>
             </form>
         </div>
